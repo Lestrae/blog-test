@@ -166,7 +166,7 @@ function App() {
           onClick={() => supabase.auth.signInWithOAuth({ 
             provider: "google", 
             options: {
-            redirectTo: "https://lestrae.github.io/blog-app/",
+            redirectTo: "https://lestrae.github.io/blog-test/",
             scopes: 'https://www.googleapis.com/auth/userinfo.profile' } 
         })}
           className="px-4 py-2 bg-blue-600 text-white rounded"
