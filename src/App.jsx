@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "./supbaseClient";
+import { useNavigate } from "react-router-dom";
 
 function App() {
   const [session, setSession] = useState(null);
@@ -7,6 +8,15 @@ function App() {
   const [newArticle, setNewArticle] = useState({ title: "", description: "" });
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) navigate("/signin");
+    };
+    checkSession();
+  }, [navigate]);
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -159,23 +169,6 @@ function App() {
     });
   };
 
-  if (!session) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <button
-          onClick={() => supabase.auth.signInWithOAuth({ 
-            provider: "google", 
-            options: {
-            redirectTo: "https://lestrae.github.io/blog-test/",
-            scopes: 'https://www.googleapis.com/auth/userinfo.profile' } 
-        })}
-          className="px-4 py-2 bg-blue-600 text-white rounded"
-        >
-          Sign in with Google to continue
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen text-pretty bg-neutral-800 bg-linear-to-t/srgb from-indigo-500 to-teal-400 p-4">
