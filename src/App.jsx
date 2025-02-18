@@ -12,11 +12,25 @@ function App() {
 
   useEffect(() => {
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) navigate("/signin");
+      const { data: { session }, error } = await supabase.auth.getSession();
+      
+      if (error || !validateSession(session)) {
+        await supabase.auth.signOut();
+        navigate("/signin");
+        return;
+      }
+      
+      if (session) {
+        setSession(session);
+        await fetchArticles();
+      } else {
+        navigate("/signin");
+      }
+      setLoading(false);
     };
+    
     checkSession();
-  }, [navigate]);
+  }, [navigate, fetchArticles]);
 
   const fetchArticles = useCallback(async () => {
     try {
@@ -169,6 +183,13 @@ function App() {
     });
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-white">Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen text-pretty bg-neutral-800 bg-linear-to-t/srgb from-indigo-500 to-teal-400 p-4">
