@@ -2,25 +2,39 @@ import { useEffect } from "react";
 import { supabase } from "./supbaseClient";
 import { useNavigate } from "react-router-dom";
 
+const validateSession = (session) => {
+  if (!session) return false;
+  const currentTime = Math.floor(Date.now() / 1000);
+  return session.expires_at > currentTime;
+};
+
 export default function SignIn() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check for existing session
     const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) navigate("#");  // Redirect to /# if session exists
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (session && validateSession(session)) {
+        navigate("/app");
+      }
     };
-
+    
     checkSession();
 
-    // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate("#");  // Redirect to /# after sign in
+      if (session && validateSession(session)) {
+        navigate("/app");
+      }
     });
 
     return () => subscription?.unsubscribe();
   }, [navigate]);
+
+  // Handle GitHub Pages subpath in redirect URL
+  const getRedirectUrl = () => {
+    const baseUrl = window.location.href.replace(/\/signin.*$/, '');
+    return `${baseUrl}/app`;
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-neutral-800">
@@ -28,8 +42,8 @@ export default function SignIn() {
         onClick={() => supabase.auth.signInWithOAuth({ 
           provider: "google", 
           options: {
-            // redirectTo: window.location.origin + "/#",
-          scopes: 'https://www.googleapis.com/auth/userinfo.profile'
+            redirectTo: getRedirectUrl(),
+            scopes: 'https://www.googleapis.com/auth/userinfo.profile'
           }
         })}
         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
