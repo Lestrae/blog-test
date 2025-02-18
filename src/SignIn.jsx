@@ -9,14 +9,14 @@ export default function SignIn() {
     // Check for existing session
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      if (session) navigate("/#");  // Redirect to /# if session exists
+      if (session) navigate("#");  // Redirect to /# if session exists
     };
 
     checkSession();
 
     // Auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) navigate("/#");  // Redirect to /# after sign in
+      if (session) navigate("#");  // Redirect to /# after sign in
     });
 
     return () => subscription?.unsubscribe();
@@ -29,7 +29,7 @@ export default function SignIn() {
           provider: "google", 
           options: {
             // redirectTo: window.location.origin + "/#",
-            scopes: 'https://www.googleapis.com/auth/userinfo.profile'
+          scopes: 'https://www.googleapis.com/auth/userinfo.profile'
           }
         })}
         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors duration-200"
