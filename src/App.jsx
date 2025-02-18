@@ -60,18 +60,23 @@ function App() {
         setSession(session);
         if (session) await fetchArticles();
       });
+    }, [fetchArticles]);
+    
+    useEffect(() => {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session && validateSession(session)) {
+          setSession(session);
+          await fetchArticles();
+        } else {
+          await supabase.auth.signOut();
+          setSession(null);
+          navigate("/signin");
+        }
+      });
+    
+      return () => subscription?.unsubscribe();
+    }, [navigate, fetchArticles]);
 
-      useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          if (session && validateSession(session)) {
-            setSession(session);
-            await fetchArticles();
-          } else {
-            await supabase.auth.signOut();
-            setSession(null);
-            navigate("/signin");
-          }
-        });
       // const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_, session) => {
       //   if (session?.user) {
       //     setTimeout(async () => {
@@ -85,8 +90,6 @@ function App() {
       //   }
       // });
   
-      return () => subscription?.unsubscribe();
-}, [navigate, fetchArticles]);
 
   useEffect(() => {
     if (!session) return;
